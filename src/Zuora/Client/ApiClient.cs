@@ -133,9 +133,14 @@ namespace Zuora.Client
                 request.AddParameter(param.Key, param.Value);
 
             // add file parameter, if any
-            foreach(var param in fileParams)
+            foreach (var param in fileParams)
             {
-                request.AddFile(param.Value.Name, param.Value.Writer, param.Value.FileName, param.Value.ContentType);
+                using (var memoryStream = new MemoryStream())
+                {
+                    param.Value.Writer(memoryStream);
+                    byte[] fileBytes = memoryStream.ToArray();
+                    request.AddFile(param.Value.Name, fileBytes, param.Value.FileName, param.Value.ContentType);
+                }
             }
 
             if (postBody != null) // http body (model or byte[]) parameter
